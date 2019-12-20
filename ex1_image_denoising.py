@@ -20,7 +20,6 @@ gaussian_fil_5x5 = 1/273*np.array([[1, 4, 7, 4, 1],
                                    [7, 26, 41, 26, 7],
                                    [4, 16, 26, 16, 4],
                                    [1, 4, 7, 4, 1]])
-# convolve for RGB image
 
 
 def space_filter(img, fil_type="CONV_RGB", fil=fil_sample, mode="SAME"):
