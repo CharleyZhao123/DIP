@@ -1,2 +1,1 @@
-# DIP
-some DIP experiments
+# USTB digital image processing course experiment
