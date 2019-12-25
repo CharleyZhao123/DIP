@@ -20,6 +20,20 @@ gaussian_fil_5x5 = 1/273*np.array([[1, 4, 7, 4, 1],
                                    [7, 26, 41, 26, 7],
                                    [4, 16, 26, 16, 4],
                                    [1, 4, 7, 4, 1]])
+<<<<<<< HEAD
+=======
+
+# Sobel
+# Detect the vertical edge
+sobel_fil_x = np.array([[-1, 0, 1],
+                        [-2, 0, 2],
+                        [-1, 0, 1]])
+
+# Detect horizontal edges
+sobel_fil_y = np.array([[1, 2, 1],
+                        [0, 0, 0],
+                        [-1, -2, -1]])
+>>>>>>> add ex2 part
 
 
 def space_filter(img, fil_type="CONV_RGB", fil=fil_sample, mode="SAME"):
@@ -41,8 +55,12 @@ def space_filter(img, fil_type="CONV_RGB", fil=fil_sample, mode="SAME"):
         else:
             pad_w_lef = pad_w_rig = h//2
 
-        img = np.pad(img, ((pad_h_top, pad_h_bottom),
-                           (pad_w_lef, pad_w_rig), (0, 0)), "constant")
+        if fil_type == "GRAY":
+            img = np.pad(img, ((pad_h_top, pad_h_bottom),
+                               (pad_w_lef, pad_w_rig)), "constant")
+        else:
+            img = np.pad(img, ((pad_h_top, pad_h_bottom),
+                               (pad_w_lef, pad_w_rig), (0, 0)), "constant")
 
     if fil_type == "CONV_RGB":
         conv_r = conv(img[:, :, 0], fil)
@@ -52,9 +70,15 @@ def space_filter(img, fil_type="CONV_RGB", fil=fil_sample, mode="SAME"):
         conv_r = middle_filter(img[:, :, 0], fil)
         conv_g = middle_filter(img[:, :, 1], fil)
         conv_b = middle_filter(img[:, :, 2], fil)
+    elif fil_type == "GRAY":
+        conv_i = conv(img, fil)
 
-    # combine the RGB channel
-    output_img = np.dstack([conv_r, conv_g, conv_b])
+    if fil_type == "GRAY":
+        output_img = conv_i
+    else:
+        # combine the RGB channel
+        output_img = np.dstack([conv_r, conv_g, conv_b])
+
     return output_img
 
 
@@ -112,7 +136,7 @@ def get_middle(img_e):
 
 
 def main():
-    img = cv2.imread("test1.jpg")   # read the image
+    img = cv2.imread("org1.jpg")   # read the image
     # change the image from BGR to RGB
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -128,20 +152,26 @@ def main():
 
     # mean filter
     # res = cv2.filter2D(img, -1, fil)  # use opencv
-    res = space_filter(img, "CONV_RGB", gaussian_fil_5x5, "SAME")
+    # res = space_filter(img, "CONV_RGB", gaussian_fil_5x5, "SAME")
 
     # middle filter
     # res = cv2.medianBlur(img, 3) # use opencv
     # res = space_filter(img, "MIDDLE_FILTER", fil, "SAME")
+
+    # Non-Local Means filter
+    # res = cv2.fastNlMeansDenoising(img, None, 20.0, 5, 35)  # use opencv
+
+    # sobel
+    res = space_filter(img, "CONV_RGB", sobel_fil_x, "SAME")
 
     plt.imshow(res)
     plt.imsave("res.jpg", res)
     print(res.shape)
     plt.show()
 
-    tar = cv2.imread("org1.jpg")
-    tar = cv2.cvtColor(tar, cv2.COLOR_BGR2RGB)
-    print(psnr(tar, res, 512.0))  # calculate the PSNR
+    # tar = cv2.imread("org1.jpg")
+    # tar = cv2.cvtColor(tar, cv2.COLOR_BGR2RGB)
+    # print(psnr(tar, res, 512.0))  # calculate the PSNR
 
 
 if __name__ == '__main__':
