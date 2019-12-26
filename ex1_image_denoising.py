@@ -20,20 +20,6 @@ gaussian_fil_5x5 = 1/273*np.array([[1, 4, 7, 4, 1],
                                    [7, 26, 41, 26, 7],
                                    [4, 16, 26, 16, 4],
                                    [1, 4, 7, 4, 1]])
-<<<<<<< HEAD
-=======
-
-# Sobel
-# Detect the vertical edge
-sobel_fil_x = np.array([[-1, 0, 1],
-                        [-2, 0, 2],
-                        [-1, 0, 1]])
-
-# Detect horizontal edges
-sobel_fil_y = np.array([[1, 2, 1],
-                        [0, 0, 0],
-                        [-1, -2, -1]])
->>>>>>> add ex2 part
 
 
 def space_filter(img, fil_type="CONV_RGB", fil=fil_sample, mode="SAME"):
