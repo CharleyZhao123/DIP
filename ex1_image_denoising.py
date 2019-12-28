@@ -122,7 +122,7 @@ def get_middle(img_e):
 
 
 def main():
-    img = cv2.imread("org1.jpg")   # read the image
+    img = cv2.imread("test2.jpg")   # read the image
     # change the image from BGR to RGB
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
@@ -138,26 +138,23 @@ def main():
 
     # mean filter
     # res = cv2.filter2D(img, -1, fil)  # use opencv
-    # res = space_filter(img, "CONV_RGB", gaussian_fil_5x5, "SAME")
+    # res = space_filter(img, "CONV_RGB", fil, "SAME")
 
     # middle filter
     # res = cv2.medianBlur(img, 3) # use opencv
-    # res = space_filter(img, "MIDDLE_FILTER", fil, "SAME")
+    res = space_filter(img, "MIDDLE_FILTER", fil, "SAME")
 
     # Non-Local Means filter
     # res = cv2.fastNlMeansDenoising(img, None, 20.0, 5, 35)  # use opencv
-
-    # sobel
-    res = space_filter(img, "CONV_RGB", sobel_fil_x, "SAME")
 
     plt.imshow(res)
     plt.imsave("res.jpg", res)
     print(res.shape)
     plt.show()
 
-    # tar = cv2.imread("org1.jpg")
-    # tar = cv2.cvtColor(tar, cv2.COLOR_BGR2RGB)
-    # print(psnr(tar, res, 512.0))  # calculate the PSNR
+    tar = cv2.imread("org2.jpg")
+    tar = cv2.cvtColor(tar, cv2.COLOR_BGR2RGB)
+    print(psnr(tar, res, 512.0))  # calculate the PSNR
 
 
 if __name__ == '__main__':
