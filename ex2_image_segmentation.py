@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 from ex1_image_denoising import space_filter
+import filters
 
 # Prewitt
 # Detect the vertical edge
@@ -41,6 +42,7 @@ laplacian_fil_8 = np.array([[1, 1, 1],
 def image_get_label(img, mode="THRESHOLD_OSTU"):
     img_h = img.shape[0]
     img_w = img.shape[1]
+    label_img = np.zeros((img_h, img_w), dtype="uint16")
 
     # OSTU
     if mode == "THRESHOLD_OSTU":
@@ -49,8 +51,6 @@ def image_get_label(img, mode="THRESHOLD_OSTU"):
         gray_list = np.zeros(256, dtype="uint16")  # statistical gray value
         # statistical gray probability
         gray_probability = np.zeros(256, dtype="float32")
-        # create output label_img
-        label_img = np.zeros((img_h, img_w), dtype="uint16")
         pixel_sum = img_h*img_w
 
         for i in range(img_h):
@@ -83,8 +83,8 @@ def image_get_label(img, mode="THRESHOLD_OSTU"):
                 else:
                     object_p += gray_probability[i]
                     object_m += i*gray_probability[i]
-            
-            if background_p==0 or object_p==0:
+
+            if background_p == 0 or object_p == 0:
                 continue
             background_u = float(background_m)/background_p
             object_u = float(object_m)/object_p
@@ -104,7 +104,6 @@ def image_get_label(img, mode="THRESHOLD_OSTU"):
                 max_variance = T_variance
                 max_T = T
 
-
         for i in range(img_h):
             for j in range(img_w):
                 gray_value = img[i][j]
@@ -113,6 +112,23 @@ def image_get_label(img, mode="THRESHOLD_OSTU"):
                 else:
                     label_img[i][j] = 1
         print(label_img)
+
+    elif mode == "EDGE_BASED":
+        # Gaussian smoothing
+        smooth_img = space_filter(img, fil_type="GRAY",
+                                fil=filters.gaussian_fil_5x5, mode="SAME")
+        plt.imsave("smooth_img.jpg", smooth_img)
+        # get the edge
+        edge_img = space_filter(smooth_img, fil_type="GRAY",
+                                fil=filters.laplacian_fil_8, mode="SAME")
+        plt.imsave("edge_img.jpg", edge_img)
+        for i in range(img_h):
+            for j in range(img_w):
+                gray_value = edge_img[i][j]
+                if gray_value >= 30:
+                    label_img[i][j] = 5
+                else:
+                    label_img[i][j] = 1
 
     return label_img
 
@@ -144,7 +160,7 @@ def image_color_fill(label_img):
     return visual_img
 
 
-img = cv2.imread("test3.jpg")   # read the image
+img = cv2.imread("test4.jpg")   # read the image
 # change the image from BGR to RGB
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -153,11 +169,10 @@ img_type = img.shape
 print(img_type)
 # cv2.imshow("img_gray",img)
 # cv2.waitKey()
-plt.imshow(img, cmap="gray")  # show the image
+plt.imshow(img, cmap="gray")  # show the image-=
 plt.show()
-# res2 = space_filter(img, fil_type="GRAY", fil=laplacian_fil_8, mode="SAME")
 # plt.imshow(res2, cmap="gray")
-label_image = image_get_label(img)
+label_image = image_get_label(img, mode="EDGE_BASED")
 res2 = image_color_fill(label_image)
 plt.imsave("res2.jpg", res2)
 print(res2.shape)
