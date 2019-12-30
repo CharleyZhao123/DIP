@@ -3,26 +3,10 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import numpy as np
 from image_evaluation import psnr
-
-# a convolution kernel sample
-# mean filter
-fil_sample = 1/9*np.array([[1, 1, 1],
-                           [1, 1, 1],
-                           [1, 1, 1]])
-
-# Gaussian filter
-gaussian_fil_3x3 = 1/16*np.array([[1, 2, 1],
-                                  [2, 4, 2],
-                                  [1, 2, 1]])
-
-gaussian_fil_5x5 = 1/273*np.array([[1, 4, 7, 4, 1],
-                                   [4, 16, 26, 16, 4],
-                                   [7, 26, 41, 26, 7],
-                                   [4, 16, 26, 16, 4],
-                                   [1, 4, 7, 4, 1]])
+import filters
 
 
-def space_filter(img, fil_type="CONV_RGB", fil=fil_sample, mode="SAME"):
+def space_filter(img, fil_type="CONV_RGB", fil=filters.fil_sample, mode="SAME"):
     if mode == "SAME":
         # get the height and width of the convolution kernel
         h = fil.shape[0]
@@ -132,17 +116,13 @@ def main():
     plt.imshow(img)  # show the image
     plt.show()
 
-    fil = 1/9*np.array([[1, 1, 1],
-                        [1, 1, 1],
-                        [1, 1, 1]])
-
     # mean filter
-    # res = cv2.filter2D(img, -1, fil)  # use opencv
-    # res = space_filter(img, "CONV_RGB", fil, "SAME")
+    # res = cv2.filter2D(img, -1, filters.fil_sample)  # use opencv
+    # res = space_filter(img, "CONV_RGB", filters.fil_sample, "SAME")
 
     # middle filter
     # res = cv2.medianBlur(img, 3) # use opencv
-    res = space_filter(img, "MIDDLE_FILTER", fil, "SAME")
+    res = space_filter(img, "MIDDLE_FILTER", filters.fil_sample, "SAME")
 
     # Non-Local Means filter
     # res = cv2.fastNlMeansDenoising(img, None, 20.0, 5, 35)  # use opencv

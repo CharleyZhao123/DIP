@@ -1,0 +1,21 @@
+function [imgBin]=img2bin(img)
+img = rgb2Gray(img);
+hist = imhist(img);
+[feature]=enhanceFeature(hist);
+[threshold]=getThreshold(feature,hist);
+sizeImg = size(img);
+imgBin =zeros(sizeImg(1),sizeImg(2),3);
+for i=1:sizeImg(1)
+    for j = 1:sizeImg(2)
+        idx = inThreshold(img(i,j),threshold);
+        if(idx == 1)
+            imgBin(i,j,:) = [0,0,255];
+        elseif(idx == 2)
+            
+        else
+            
+        end
+    end
+end
+imgBin = uint8(imgBin);
+end

@@ -5,40 +5,6 @@ import numpy as np
 from ex1_image_denoising import space_filter
 import filters
 
-# Prewitt
-# Detect the vertical edge
-prewitt_fil_x = np.array([[-1, 0, 1],
-                          [-1, 0, 1],
-                          [-1, 0, 1]])
-
-# Detect horizontal edges
-prewitt_fil_y = np.array([[1, 1, 1],
-                          [0, 0, 0],
-                          [-1, -1, -1]])
-
-# Sobel
-# Detect the vertical edge
-sobel_fil_x = np.array([[-1, 0, 1],
-                        [-2, 0, 2],
-                        [-1, 0, 1]])
-
-# Detect horizontal edges
-sobel_fil_y = np.array([[1, 2, 1],
-                        [0, 0, 0],
-                        [-1, -2, -1]])
-
-# Laplacian
-# 4-nei
-laplacian_fil_4 = np.array([[0, 1, 0],
-                            [1, -4, 1],
-                            [0, 1, 0]])
-
-# 8-nei
-laplacian_fil_8 = np.array([[1, 1, 1],
-                            [1, -8, 1],
-                            [1, 1, 1]])
-
-
 def image_get_label(img, mode="THRESHOLD_OSTU"):
     img_h = img.shape[0]
     img_w = img.shape[1]
@@ -113,20 +79,58 @@ def image_get_label(img, mode="THRESHOLD_OSTU"):
                     label_img[i][j] = 1
         print(label_img)
 
+    elif mode == "HIS_MODE":
+        pass
+        gray_list_0 = np.zeros(256, dtype="uint16")  # statistical gray value
+        gray_list_1 = np.zeros(256, dtype="uint16")  
+        # statistical gray probability
+        for i in range(img_h):
+            for j in range(img_w):
+                gray_value = img[i][j]
+                gray_list_0[gray_value] += 1
+        
+        for i in range(5,250):
+            gray_list_1[i] = np.mean(gray_list_0[i-5:i+5])
+
+        his_max=[]
+        T = []
+        for i in range(250):
+            if gray_list_1[i]>gray_list_1[i-1] and gray_list_1[i]>gray_list_1[i-2] and gray_list_1[i]>gray_list_1[i+1] and gray_list_1[i]>gray_list_1[i+2]:
+                his_max.append(i)
+        # for i in range(len(his_max)-1):
+        #     if abs(his_max[i]-his_max[i+1])<50:
+        #         del(his_max[i])
+        # print(his_max)
+
+        for i in range(len(his_max)-1):
+            T.append((float(his_max[i])+his_max[i])/2)
+        # print(T)
+
+        for i in range(img_h):
+            for j in range(img_w):
+                gray_value = img[i][j]
+                for t in range(len(T)):
+                    if gray_value<=T[t]:
+                        label_img[i][j]=t+1
+                        break
+
+        
     elif mode == "EDGE_BASED":
         # Gaussian smoothing
         smooth_img = space_filter(img, fil_type="GRAY",
                                 fil=filters.gaussian_fil_5x5, mode="SAME")
         plt.imsave("smooth_img.jpg", smooth_img)
+
         # get the edge
         edge_img = space_filter(smooth_img, fil_type="GRAY",
                                 fil=filters.laplacian_fil_8, mode="SAME")
         plt.imsave("edge_img.jpg", edge_img)
+
         for i in range(img_h):
             for j in range(img_w):
                 gray_value = edge_img[i][j]
-                if gray_value >= 30:
-                    label_img[i][j] = 5
+                if gray_value >= 10:
+                    label_img[i][j] = 0
                 else:
                     label_img[i][j] = 1
 
