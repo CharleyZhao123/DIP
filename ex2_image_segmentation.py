@@ -5,6 +5,7 @@ import numpy as np
 from ex1_image_denoising import space_filter
 import filters
 
+
 def image_get_label(img, mode="THRESHOLD_OSTU"):
     img_h = img.shape[0]
     img_w = img.shape[1]
@@ -80,45 +81,68 @@ def image_get_label(img, mode="THRESHOLD_OSTU"):
         print(label_img)
 
     elif mode == "HIS_MODE":
-        pass
         gray_list_0 = np.zeros(256, dtype="uint16")  # statistical gray value
-        gray_list_1 = np.zeros(256, dtype="uint16")  
+        gray_list_1 = np.zeros(256, dtype="uint16")
+        gray_list_2 = np.zeros(256, dtype="uint16")
+
         # statistical gray probability
         for i in range(img_h):
             for j in range(img_w):
                 gray_value = img[i][j]
                 gray_list_0[gray_value] += 1
-        
-        for i in range(5,250):
+
+        # mean smooth
+        for i in range(5, 250):
             gray_list_1[i] = np.mean(gray_list_0[i-5:i+5])
 
-        his_max=[]
+        # Gaussianfilter smooth [1, 2, 1]
+        for i in range(256):
+            if i == 0:
+                gray_list_2[i] = (2*gray_list_1[i]+gray_list_1[i+1])/5
+            elif i == 255:
+                gray_list_2[i] = (2*gray_list_1[i]+gray_list_1[i-1])/5
+            else:
+                gray_list_2[i] = (gray_list_1[i-1]+2 *
+                                  gray_list_1[i]+gray_list_1[i+1])/5
+
+        his_max = []
+        # his_max_ = []
         T = []
+        begin = 0
+        end = len(gray_list_2)
         for i in range(250):
-            if gray_list_1[i]>gray_list_1[i-1] and gray_list_1[i]>gray_list_1[i-2] and gray_list_1[i]>gray_list_1[i+1] and gray_list_1[i]>gray_list_1[i+2]:
+            if gray_list_2[i-1] < gray_list_2[i] < gray_list_2[i+1] and gray_list_2[i-2] < gray_list_2[i] < gray_list_2[i+2]:
                 his_max.append(i)
-        # for i in range(len(his_max)-1):
-        #     if abs(his_max[i]-his_max[i+1])<50:
-        #         del(his_max[i])
-        # print(his_max)
 
         for i in range(len(his_max)-1):
-            T.append((float(his_max[i])+his_max[i])/2)
+            mean = 0.0
+            if abs(his_max[i]-his_max[i+1]) > 10 or i == len(his_max)-2:
+                end = i
+                for j in range(end-begin+1):
+                    x = begin+j
+                    mean += his_max[x]
+                mean = mean/(end-begin+1)
+                T.append(mean)
+                begin = end+1
+                # his_max_.append(his_max[i])
+                # his_max_.append(his_max[i+1])
+
+        # for i in range(len(his_max_)-1):
+        #     T.append((float(his_max_[i])+his_max_[i])/2)
         # print(T)
 
         for i in range(img_h):
             for j in range(img_w):
                 gray_value = img[i][j]
                 for t in range(len(T)):
-                    if gray_value<=T[t]:
-                        label_img[i][j]=t+1
+                    if gray_value <= T[t]:
+                        label_img[i][j] = t+1
                         break
 
-        
     elif mode == "EDGE_BASED":
         # Gaussian smoothing
         smooth_img = space_filter(img, fil_type="GRAY",
-                                fil=filters.gaussian_fil_5x5, mode="SAME")
+                                  fil=filters.gaussian_fil_5x5, mode="SAME")
         plt.imsave("smooth_img.jpg", smooth_img)
 
         # get the edge
@@ -164,7 +188,7 @@ def image_color_fill(label_img):
     return visual_img
 
 
-img = cv2.imread("test4.jpg")   # read the image
+img = cv2.imread("org1.jpg")   # read the image
 # change the image from BGR to RGB
 img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -176,7 +200,7 @@ print(img_type)
 plt.imshow(img, cmap="gray")  # show the image-=
 plt.show()
 # plt.imshow(res2, cmap="gray")
-label_image = image_get_label(img, mode="EDGE_BASED")
+label_image = image_get_label(img, mode="HIS_MODE")
 res2 = image_color_fill(label_image)
 plt.imsave("res2.jpg", res2)
 print(res2.shape)
